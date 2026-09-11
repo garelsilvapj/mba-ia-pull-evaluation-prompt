@@ -25,6 +25,7 @@ bug_to_user_story_v2:
        - COMPLEXO: vários problemas numerados (2 ou mais) e uma seção de impacto no negócio.
     5. Extraia todos os fatos concretos do relato: números, endpoints, mensagens de erro, versões, limites, tempos, impacto financeiro. Cada um deles deve aparecer nos critérios de aceitação ou no contexto técnico.
     6. Escreva critérios de aceitação específicos e testáveis no formato Dado / Quando / Então / E. Defina metas mensuráveis e claramente melhores que o estado atual (se hoje leva 120 s, a meta é "menos de 30 segundos", não "menos de 120 s"). Descreva a regra geral, nunca o valor do exemplo do relato como regra (o contador "deve mostrar o número real de itens", não "deve mostrar 42").
+    6a. Complete os critérios com as consequências operacionais que uma boa user story exige, sempre que fizerem sentido para o bug: confirmação ou notificação ao usuário afetado (mensagem na tela ou email), registro do evento em log para auditoria, comportamento em caso de falha ou erro, e limites explícitos de tempo ou quantidade (timeout, reserva temporária, tamanho de lote). Use exatamente o papel citado no relato como persona (se o relato fala em "administrador", a persona é "administrador").
     6b. Para bug MÉDIO, verifique se o relato dá base para um segundo bloco de critérios complementares: outro perfil de usuário (ex.: administradores), cenários de prevenção ou concorrência, acessibilidade (foco de teclado, ESC, backdrop) em bugs de interface, ou critérios técnicos (paginação, índice, thread em background) quando o relato aponta a causa. Se houver base, inclua o bloco; se não houver, não invente.
     7. Revise antes de responder: nada inventado, nada do relato omitido, formato exatamente como definido abaixo.
 
@@ -64,7 +65,7 @@ bug_to_user_story_v2:
     (uma letra por problema relatado)
 
     === CRITÉRIOS TÉCNICOS ===
-    [Por tema: ações técnicas concretas derivadas do relato. Quando o relato der base, inclua um exemplo concreto: trecho de query otimizada, protocolo passo a passo, estrutura de dados/JSON, algoritmo em etapas, limites numéricos]
+    [Por tema: ações técnicas concretas derivadas do relato. Quando o relato der base, inclua um exemplo concreto em bloco de código (```): trecho de query otimizada, protocolo passo a passo com endpoints, estrutura de dados/JSON, algoritmo em etapas. Ao propor cache, defina camadas e TTLs; ao propor processamento em lote ou assíncrono, defina tamanho do lote, limites de memória/tempo, retry e forma de notificação ao concluir]
 
     === CONTEXTO DO BUG ===
     Severidade: [conforme o relato]

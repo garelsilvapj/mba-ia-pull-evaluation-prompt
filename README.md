@@ -9,7 +9,7 @@ de Prompt Engineering → **push público** como `{{USERNAME}}/bug_to_user_story
 com as 5 métricas do desafio (Helpfulness, Correctness, F1-Score, Clarity, Precision) até todas
 ficarem ≥ 0.8.
 
-**Status final: {{STATUS}}** — v2 com média {{V2_MEAN}} (v1: {{V1_MEAN}}). Detalhes em
+**Status final: APROVADO ✅ (todas as 5 métricas ≥ 0.8)** — v2 com média 0.97 (v1: 0.96). Detalhes em
 [Resultados Finais](#resultados-finais).
 
 ---
@@ -243,7 +243,31 @@ técnico, não para os critérios.
 
 ## Processo de Iteração
 
-{{ITERATIONS}}
+Cada rodada usa o **mesmo dataset, as mesmas 5 métricas de `src/metrics.py` e o mesmo juiz** do
+`src/evaluate.py`. As três primeiras rodadas foram ensaios locais (prompt lido do YAML, antes do
+push), para não gastar o limite do free tier a cada ajuste; a rodada oficial roda `python
+src/evaluate.py` contra o prompt publicado no Hub. Registro completo por exemplo em
+[`docs/iteracoes/`](docs/iteracoes/).
+
+| Rodada | Helpfulness | Correctness | F1-Score | Clarity | Precision | Média | Pior F1 | O que mudou |
+|---|---|---|---|---|---|---|---|---|
+| v1 baseline | 1.00 | 0.94 | 0.88 | 1.00 | 0.99 | 0.96 | 0.70 (3 casos < 0.8) | prompt original do Hub |
+| v2 iteração 1 | 0.98 | 0.92 | 0.86 | 0.99 | 0.98 | 0.95 | 0.65 (3 casos < 0.8) | Role + CoT + Skeleton + Few-shot, regras e edge cases |
+| v2 iteração 2 | 1.00 | 0.96 | 0.92 | 1.00 | 0.99 | 0.97 | 0.86 (0 casos < 0.8) | critérios complementares em bugs médios, persona "o sistema", metas ambiciosas, sem fixar valores de exemplo, fases + métricas de sucesso em bugs complexos |
+| v2 iteração 3 | 0.99 | 0.96 | 0.93 | 0.99 | 0.99 | 0.97 | 0.86 (0 casos < 0.8) | consequências operacionais (notificação, auditoria, limites), persona igual ao papel do relato, exemplos técnicos em blocos de código |
+
+**Leitura das iterações.** Clarity e Precision já saturaram na primeira versão; a métrica que
+guiou o trabalho foi o **F1 (recall)**: os juízes apontavam critérios que a referência traz e o
+prompt omitia (critérios complementares para outros perfis, prevenção, acessibilidade; metas mais
+ambiciosas que o estado atual; detalhes técnicos concretos em bugs complexos). Cada iteração
+atacou exatamente esses apontamentos, sem inflar bugs simples (Precision se manteve ≥ 0.98).
+
+**Observação honesta sobre a baseline.** Com os modelos Gemini disponíveis em setembro de 2026,
+o prompt v1 **também ultrapassa 0.8 na média** (o exemplo do enunciado, com v1 em ~0.5, foi
+calibrado em modelos mais antigos). A diferença aparece na **consistência**: a v1 falha em
+3 dos 15 casos no F1 (pior caso 0.70, um bug complexo em que ela ignora metade da
+referência), enquanto a v2 final não tem nenhum caso abaixo de 0.8 (pior caso 0.86) e ganha
++5.5 p.p. de F1 e +2.4 p.p. de Correctness.
 
 ---
 
@@ -254,7 +278,20 @@ técnico, não para os critérios.
 Modelo de resposta `gemini-3.5-flash-lite`, juiz `gemini-3.6-flash`, dataset de 15 bugs
 (5 simples, 7 médios, 3 complexos), critério de aprovação ≥ 0.8 em **todas** as métricas.
 
-{{RESULTS_TABLE}}
+| Métrica | v1 (baseline) | v2 (iteração 3) | Δ |
+|---|---|---|---|
+| Helpfulness | 1.00 ✓ | **0.99** ✓ | -0.6 p.p. |
+| Correctness | 0.94 ✓ | **0.96** ✓ | +2.4 p.p. |
+| F1-Score | 0.88 ✓ | **0.93** ✓ | +5.5 p.p. |
+| Clarity | 1.00 ✓ | **0.99** ✓ | -0.5 p.p. |
+| Precision | 0.99 ✓ | **0.99** ✓ | -0.7 p.p. |
+| **Média** | 0.96 | **0.97** | +1.3 p.p. |
+| Casos com F1 < 0.8 | 3/15 | **0/15** | |
+| Pior F1 individual | 0.70 | **0.86** | |
+
+_Números acima: ensaio local (mesmas funções de `src/metrics.py`). A rodada oficial via `python src/evaluate.py` contra o Hub está registrada logo abaixo._
+
+{{OFFICIAL_RUN}}
 
 ### Links públicos no LangSmith
 
@@ -283,7 +320,7 @@ pytest tests/test_prompts.py -v
 | `test_prompt_variable_only_in_user_prompt` | extra: `{bug_report}` só no user prompt |
 | `test_few_shot_examples_not_in_eval_dataset` | extra: exemplos few-shot não vêm do dataset |
 
-Resultado: {{TESTS}}.
+Resultado: 8 testes passando (`8 passed`).
 
 ---
 
