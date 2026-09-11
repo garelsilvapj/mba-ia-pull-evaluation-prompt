@@ -48,3 +48,6 @@ ENV/
 screenshots/
 results/
 .claude/
+# Evidências do desafio (screenshots do LangSmith e registro das iterações) devem ser versionadas
+!docs/screenshots/
+!docs/screenshots/**
