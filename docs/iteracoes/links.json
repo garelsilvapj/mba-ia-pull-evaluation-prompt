@@ -1,0 +1,25 @@
+{
+  "dataset_url": "https://smith.langchain.com/o/598b6c94-8637-44e7-bcad-b8463ffdc4b0/datasets/1028f600-b365-47a6-affc-936b4bbe721c",
+  "dataset_examples": 15,
+  "project_url": "https://smith.langchain.com/o/598b6c94-8637-44e7-bcad-b8463ffdc4b0/projects/p/76cd543f-41cc-43a8-b4bc-e5b969485eac",
+  "root_runs": 120,
+  "prompt_v2": "https://smith.langchain.com/hub/garelsilvapj/bug_to_user_story_v2",
+  "prompt_v1": "https://smith.langchain.com/hub/garelsilvapj/bug_to_user_story_v1",
+  "traces": [
+    {
+      "name": "RunnableSequence",
+      "url": "https://smith.langchain.com/o/598b6c94-8637-44e7-bcad-b8463ffdc4b0/projects/p/76cd543f-41cc-43a8-b4bc-e5b969485eac/r/27e4e2fc-67d5-41bc-8bfd-e1789d71405f",
+      "input_chars": 89
+    },
+    {
+      "name": "RunnableSequence",
+      "url": "https://smith.langchain.com/o/598b6c94-8637-44e7-bcad-b8463ffdc4b0/projects/p/76cd543f-41cc-43a8-b4bc-e5b969485eac/r/a444ff7d-e340-4c0c-adcc-888cae767403",
+      "input_chars": 309
+    },
+    {
+      "name": "RunnableSequence",
+      "url": "https://smith.langchain.com/o/598b6c94-8637-44e7-bcad-b8463ffdc4b0/projects/p/76cd543f-41cc-43a8-b4bc-e5b969485eac/r/8ee71d4c-d38a-4b45-9963-c3490aae5ec3",
+      "input_chars": 2909
+    }
+  ]
+}

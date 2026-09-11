@@ -5,7 +5,7 @@ Desafio técnico do MBA em Engenharia de Software com IA (FullCycle). Fork de
 
 Fluxo entregue: **pull** do prompt de baixa qualidade `leonanluppi/bug_to_user_story_v1` do
 LangSmith Prompt Hub → **refatoração** em `prompts/bug_to_user_story_v2.yml` com técnicas avançadas
-de Prompt Engineering → **push público** como `{{USERNAME}}/bug_to_user_story_v2` → **avaliação**
+de Prompt Engineering → **push público** como `garelsilvapj/bug_to_user_story_v2` → **avaliação**
 com as 5 métricas do desafio (Helpfulness, Correctness, F1-Score, Clarity, Precision) até todas
 ficarem ≥ 0.8.
 
@@ -254,6 +254,7 @@ src/evaluate.py` contra o prompt publicado no Hub. Registro completo por exemplo
 | v1 baseline | 1.00 | 0.94 | 0.88 | 1.00 | 0.99 | 0.96 | 0.70 (3 casos < 0.8) | prompt original do Hub |
 | v2 iteração 1 | 0.98 | 0.92 | 0.86 | 0.99 | 0.98 | 0.95 | 0.65 (3 casos < 0.8) | Role + CoT + Skeleton + Few-shot, regras e edge cases |
 | v2 iteração 2 | 1.00 | 0.96 | 0.92 | 1.00 | 0.99 | 0.97 | 0.86 (0 casos < 0.8) | critérios complementares em bugs médios, persona "o sistema", metas ambiciosas, sem fixar valores de exemplo, fases + métricas de sucesso em bugs complexos |
+| **oficial** (Hub) v2 | 0.99 | 0.94 | 0.91 | 0.99 | 0.98 | 0.96 | 0.67 (1 caso < 0.8) | `python src/evaluate.py` contra `garelsilvapj/bug_to_user_story_v2`; v1 oficial: média 0.96, F1 0.87 |
 | v2 iteração 3 | 0.99 | 0.96 | 0.93 | 0.99 | 0.99 | 0.97 | 0.86 (0 casos < 0.8) | consequências operacionais (notificação, auditoria, limites), persona igual ao papel do relato, exemplos técnicos em blocos de código |
 
 **Leitura das iterações.** Clarity e Precision já saturaram na primeira versão; a métrica que
@@ -291,15 +292,62 @@ Modelo de resposta `gemini-3.5-flash-lite`, juiz `gemini-3.6-flash`, dataset de 
 
 _Números acima: ensaio local (mesmas funções de `src/metrics.py`). A rodada oficial via `python src/evaluate.py` contra o Hub está registrada logo abaixo._
 
-{{OFFICIAL_RUN}}
+### Rodada oficial (`python src/evaluate.py`, prompt puxado do Hub)
+
+Saída completa em [`docs/iteracoes/oficial-v2.md`](docs/iteracoes/oficial-v2.md) e
+[`docs/iteracoes/oficial-v1.md`](docs/iteracoes/oficial-v1.md).
+
+| Métrica | v1 `garelsilvapj/bug_to_user_story_v1` | v2 `garelsilvapj/bug_to_user_story_v2` |
+|---|---|---|
+| Helpfulness | 0.99 ✓ | **0.99** ✓ |
+| Correctness | 0.93 ✓ | **0.94** ✓ |
+| F1-Score | 0.87 ✓ | **0.91** ✓ |
+| Clarity | 1.00 ✓ | **0.99** ✓ |
+| Precision | 0.99 ✓ | **0.98** ✓ |
+| **Média geral** | 0.9583 | **0.9622** |
+| Status | APROVADO | **✅ APROVADO - Todas as métricas >= 0.8** |
+
+```text
+==================================================
+Prompt: garelsilvapj/bug_to_user_story_v2
+==================================================
+Métricas Derivadas:
+  - Helpfulness: 0.99 ✓
+  - Correctness: 0.94 ✓
+Métricas Base:
+  - F1-Score: 0.91 ✓
+  - Clarity: 0.99 ✓
+  - Precision: 0.98 ✓
+--------------------------------------------------
+📊 MÉDIA GERAL: 0.9622
+--------------------------------------------------
+✅ STATUS: APROVADO - Todas as métricas >= 0.8
+```
 
 ### Links públicos no LangSmith
 
-{{LINKS}}
+| Evidência | Link |
+|---|---|
+| Prompt otimizado **v2** (público) | https://smith.langchain.com/hub/garelsilvapj/bug_to_user_story_v2 |
+| Prompt baseline **v1** (público, republicado a partir do pull) | https://smith.langchain.com/hub/garelsilvapj/bug_to_user_story_v1 |
+| Dataset de avaliação (`mba-bug-to-user-story-eval`, 15 exemplos) | https://smith.langchain.com/o/598b6c94-8637-44e7-bcad-b8463ffdc4b0/datasets/1028f600-b365-47a6-affc-936b4bbe721c |
+| Projeto de tracing (`mba-bug-to-user-story`, 120 execuções raiz: 15 respostas + 45 julgamentos por prompt) | https://smith.langchain.com/o/598b6c94-8637-44e7-bcad-b8463ffdc4b0/projects/p/76cd543f-41cc-43a8-b4bc-e5b969485eac |
+| Trace detalhado, exemplo 1 (bug simples) | https://smith.langchain.com/o/598b6c94-8637-44e7-bcad-b8463ffdc4b0/projects/p/76cd543f-41cc-43a8-b4bc-e5b969485eac/r/27e4e2fc-67d5-41bc-8bfd-e1789d71405f |
+| Trace detalhado, exemplo 2 (bug médio) | https://smith.langchain.com/o/598b6c94-8637-44e7-bcad-b8463ffdc4b0/projects/p/76cd543f-41cc-43a8-b4bc-e5b969485eac/r/a444ff7d-e340-4c0c-adcc-888cae767403 |
+| Trace detalhado, exemplo 3 (bug complexo) | https://smith.langchain.com/o/598b6c94-8637-44e7-bcad-b8463ffdc4b0/projects/p/76cd543f-41cc-43a8-b4bc-e5b969485eac/r/8ee71d4c-d38a-4b45-9963-c3490aae5ec3 |
+
+Os prompts são públicos e abrem sem login. Dataset, projeto e traces ficam dentro do workspace
+(o LangSmith não expõe projetos de tracing publicamente); por isso os screenshots abaixo.
 
 ### Screenshots
 
-{{SCREENSHOTS}}
+| | |
+|---|---|
+| ![Avaliação aprovada](docs/screenshots/01-evaluate-aprovado.png) | ![Dataset com 15 exemplos](docs/screenshots/02-dataset-15-exemplos.png) |
+| ![Prompt v2 no Hub](docs/screenshots/03-prompt-v2-hub.png) | ![Trace exemplo 1](docs/screenshots/04-tracing-exemplo-1.png) |
+| ![Trace exemplo 2](docs/screenshots/05-tracing-exemplo-2.png) | ![Trace exemplo 3](docs/screenshots/06-tracing-exemplo-3.png) |
+
+Lista e instruções de captura em [`docs/screenshots/README.md`](docs/screenshots/README.md).
 
 ---
 
