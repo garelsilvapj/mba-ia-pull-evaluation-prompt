@@ -332,7 +332,7 @@ Métricas Base:
 | Prompt baseline **v1** (público, republicado a partir do pull) | https://smith.langchain.com/hub/garelsilvapj/bug_to_user_story_v1 |
 | Dataset de avaliação (`mba-bug-to-user-story-eval`, 15 exemplos) | https://smith.langchain.com/o/598b6c94-8637-44e7-bcad-b8463ffdc4b0/datasets/1028f600-b365-47a6-affc-936b4bbe721c |
 | Projeto de tracing (`mba-bug-to-user-story`, 120 execuções raiz: 15 respostas + 45 julgamentos por prompt) | https://smith.langchain.com/o/598b6c94-8637-44e7-bcad-b8463ffdc4b0/projects/p/76cd543f-41cc-43a8-b4bc-e5b969485eac |
-| Trace detalhado, exemplo 1 (bug simples) | https://smith.langchain.com/o/598b6c94-8637-44e7-bcad-b8463ffdc4b0/projects/p/76cd543f-41cc-43a8-b4bc-e5b969485eac/r/27e4e2fc-67d5-41bc-8bfd-e1789d71405f |
+| Trace detalhado, exemplo 1 (bug simples) | https://smith.langchain.com/o/598b6c94-8637-44e7-bcad-b8463ffdc4b0/projects/p/76cd543f-41cc-43a8-b4bc-e5b969485eac/r/fbb68d8e-8a7b-4785-8e5b-639b31bb77b4 |
 | Trace detalhado, exemplo 2 (bug médio) | https://smith.langchain.com/o/598b6c94-8637-44e7-bcad-b8463ffdc4b0/projects/p/76cd543f-41cc-43a8-b4bc-e5b969485eac/r/a444ff7d-e340-4c0c-adcc-888cae767403 |
 | Trace detalhado, exemplo 3 (bug complexo) | https://smith.langchain.com/o/598b6c94-8637-44e7-bcad-b8463ffdc4b0/projects/p/76cd543f-41cc-43a8-b4bc-e5b969485eac/r/8ee71d4c-d38a-4b45-9963-c3490aae5ec3 |
 
@@ -348,6 +348,10 @@ Os prompts são públicos e abrem sem login. Dataset, projeto e traces ficam den
 | ![Trace exemplo 2](docs/screenshots/05-tracing-exemplo-2.png) | ![Trace exemplo 3](docs/screenshots/06-tracing-exemplo-3.png) |
 
 Lista e instruções de captura em [`docs/screenshots/README.md`](docs/screenshots/README.md).
+O print do terminal é de uma **segunda execução** de `python src/evaluate.py` (média 0.9616,
+Clarity 1.00), feita para a captura; a rodada registrada em `docs/iteracoes/oficial-v2.md` deu
+0.9622. A variação entre execuções vem do modelo juiz e não altera o resultado: todas as métricas
+≥ 0.8 nas duas rodadas.
 
 ---
 
