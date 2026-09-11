@@ -9,17 +9,21 @@
     {
       "name": "RunnableSequence",
       "url": "https://smith.langchain.com/o/598b6c94-8637-44e7-bcad-b8463ffdc4b0/projects/p/76cd543f-41cc-43a8-b4bc-e5b969485eac/r/fbb68d8e-8a7b-4785-8e5b-639b31bb77b4",
-      "input_chars": 89
+      "input_chars": 89,
+      "public_url": "https://smith.langchain.com/public/8ac557c6-565c-49ee-b67d-2b3bcf974670/r"
     },
     {
       "name": "RunnableSequence",
       "url": "https://smith.langchain.com/o/598b6c94-8637-44e7-bcad-b8463ffdc4b0/projects/p/76cd543f-41cc-43a8-b4bc-e5b969485eac/r/a444ff7d-e340-4c0c-adcc-888cae767403",
-      "input_chars": 309
+      "input_chars": 309,
+      "public_url": "https://smith.langchain.com/public/c7c4fae4-3151-4dfe-ba66-cf59acf1bbad/r"
     },
     {
       "name": "RunnableSequence",
       "url": "https://smith.langchain.com/o/598b6c94-8637-44e7-bcad-b8463ffdc4b0/projects/p/76cd543f-41cc-43a8-b4bc-e5b969485eac/r/8ee71d4c-d38a-4b45-9963-c3490aae5ec3",
-      "input_chars": 2909
+      "input_chars": 2909,
+      "public_url": "https://smith.langchain.com/public/fd864ccd-2188-42ae-8001-2fd34ae478ca/r"
     }
-  ]
+  ],
+  "dataset_public_url": "https://smith.langchain.com/public/58bf3322-78d6-496f-8a6a-2f4012f132d2/d"
 }

@@ -9,99 +9,27 @@ de Prompt Engineering → **push público** como `garelsilvapj/bug_to_user_story
 com as 5 métricas do desafio (Helpfulness, Correctness, F1-Score, Clarity, Precision) até todas
 ficarem ≥ 0.8.
 
-**Status final: APROVADO ✅ (todas as 5 métricas ≥ 0.8)** — v2 com média 0.97 (v1: 0.96). Detalhes em
-[Resultados Finais](#resultados-finais).
+**Status final: APROVADO ✅ (todas as 5 métricas ≥ 0.8)** — v2 com média 0.97 (v1: 0.96). Detalhes em [Resultados Finais](#resultados-finais).
+
+---
 
 ---
 
 ## Sumário
 
-1. [Como Executar](#como-executar)
-2. [Análise do prompt inicial (v1)](#análise-do-prompt-inicial-v1)
-3. [Técnicas Aplicadas (Fase 2)](#técnicas-aplicadas-fase-2)
-4. [Processo de Iteração](#processo-de-iteração)
-5. [Resultados Finais](#resultados-finais)
-6. [Testes de Validação](#testes-de-validação)
-7. [Estrutura do Projeto](#estrutura-do-projeto)
+Seções exigidas no enunciado, na mesma ordem:
+
+- **A)** [Técnicas Aplicadas (Fase 2)](#técnicas-aplicadas-fase-2): quais técnicas, justificativa e exemplos práticos
+- **B)** [Resultados Finais](#resultados-finais): link público do LangSmith, screenshots com notas ≥ 0.8, tabela v1 vs v2
+- **C)** [Como Executar](#como-executar): pré-requisitos, dependências e comandos de cada fase
+
+Complementares: [Testes de Validação](#testes-de-validação) · [Estrutura do Projeto](#estrutura-do-projeto)
 
 ---
 
-## Como Executar
+## Técnicas Aplicadas (Fase 2)
 
-### Pré-requisitos
-
-| Item | Detalhe |
-|---|---|
-| Python | 3.9+ (testado com 3.11) |
-| Conta LangSmith | região **US** (`smith.langchain.com`), plano Developer gratuito. O prompt original do desafio está publicado nessa região; contas EU (`eu.smith.langchain.com`) não conseguem fazer o pull. |
-| Username do Hub | handle público do seu workspace no LangSmith (aparece antes da `/` nos seus prompts) |
-| LLM | Google Gemini (free tier, sem cartão) **ou** OpenAI (pago). Este projeto foi executado 100% com Gemini, custo zero. |
-
-### 1. Instalar
-
-```bash
-git clone git@github.com:garelsilvapj/mba-ia-pull-evaluation-prompt.git
-cd mba-ia-pull-evaluation-prompt
-python3 -m venv venv
-source venv/bin/activate        # Windows: venv\Scripts\activate
-pip install -r requirements.txt
-```
-
-### 2. Configurar o `.env`
-
-```bash
-cp .env.example .env
-```
-
-Preencha:
-
-```ini
-LANGSMITH_TRACING=true
-LANGSMITH_ENDPOINT=https://api.smith.langchain.com
-LANGSMITH_API_KEY=lsv2_...            # smith.langchain.com → Settings → API Keys
-LANGSMITH_PROJECT=mba-bug-to-user-story
-USERNAME_LANGSMITH_HUB=seu-username   # handle do Hub
-
-GOOGLE_API_KEY=AIza...                # https://aistudio.google.com/app/apikey
-LLM_PROVIDER=google
-LLM_MODEL=gemini-3.5-flash-lite       # modelo que responde (gera a user story)
-EVAL_MODEL=gemini-3.6-flash           # modelo juiz (calcula as métricas)
-```
-
-**Escolha dos modelos.** O enunciado pede que se consulte a documentação vigente do provedor. Em
-2026-09-11 os modelos `gemini-2.5-*` do `.env.example` original **não estão mais disponíveis para
-contas novas** (a API responde `404 ... no longer available to new users`). Os modelos acima foram
-verificados via `ListModels` e chamadas reais com a chave do free tier. Usei um modelo mais capaz
-para julgar (`gemini-3.6-flash`) do que para responder (`gemini-3.5-flash-lite`), como o enunciado
-sugere. Como o free tier limita a ~10 requisições/minuto por modelo, uma avaliação completa
-(15 respostas + 45 julgamentos) leva alguns minutos; o cliente do LangChain refaz automaticamente
-as chamadas que recebem HTTP 429. O free tier do Gemini exige um projeto **sem billing habilitado**
-no AI Studio.
-
-### 3. Executar cada fase
-
-```bash
-# Fase 1 — pull do prompt de baixa qualidade (grava prompts/bug_to_user_story_v1.yml)
-python src/pull_prompts.py
-
-# Fase 2 — refatoração: editar prompts/bug_to_user_story_v2.yml (já preenchido neste repositório)
-
-# Fase 3 — push público dos prompts para o Hub ({username}/bug_to_user_story_v2 e _v1)
-python src/push_prompts.py
-
-# Fase 4 — avaliação da v2 com as 5 métricas (script fornecido pelo desafio, não alterado)
-python src/evaluate.py
-
-# Extra — avaliação da v1 (baseline) com as mesmas métricas, para a tabela comparativa
-python src/evaluate_baseline.py
-
-# Fase 5 — testes de validação do prompt
-pytest tests/test_prompts.py -v
-```
-
----
-
-## Análise do prompt inicial (v1)
+### Ponto de partida: análise do prompt inicial (v1)
 
 Conteúdo puxado do Hub (`prompts/bug_to_user_story_v1.yml`):
 
@@ -125,10 +53,21 @@ Problemas identificados:
 
 ---
 
-## Técnicas Aplicadas (Fase 2)
+### Quais técnicas foram escolhidas
 
 Arquivo: [`prompts/bug_to_user_story_v2.yml`](prompts/bug_to_user_story_v2.yml). Metadados
 `techniques_applied`: Few-shot Learning, Chain of Thought, Role Prompting, Skeleton of Thought.
+
+| Técnica | Obrigatória? | Problema da v1 que resolve | Onde está no `system_prompt` |
+|---|---|---|---|
+| **Few-shot Learning** | sim | sem exemplos, nível de detalhe descalibrado | seção `## Exemplos` (Exemplo 1 simples, Exemplo 2 médio) |
+| **Chain of Thought** | adicional | pula etapas, omite fatos do relato | seção `## Seu processo de raciocínio` (7 passos, interno) |
+| **Role Prompting** | adicional | persona vaga "um assistente" | primeiro parágrafo (Product Manager sênior, ágil) |
+| **Skeleton of Thought** | adicional | sem formato de saída, estrutura varia a cada resposta | seção `## Formato de saída` (esqueleto por complexidade) |
+
+### Justificativa e exemplos práticos de cada técnica
+
+Para cada técnica: **Por quê** (justificativa) e **Como apliquei** (trecho real do prompt).
 
 ### 1. Role Prompting (persona e contexto)
 
@@ -241,58 +180,46 @@ técnico, não para os critérios.
 
 ---
 
-## Processo de Iteração
-
-Cada rodada usa o **mesmo dataset, as mesmas 5 métricas de `src/metrics.py` e o mesmo juiz** do
-`src/evaluate.py`. As três primeiras rodadas foram ensaios locais (prompt lido do YAML, antes do
-push), para não gastar o limite do free tier a cada ajuste; a rodada oficial roda `python
-src/evaluate.py` contra o prompt publicado no Hub. Registro completo por exemplo em
-[`docs/iteracoes/`](docs/iteracoes/).
-
-| Rodada | Helpfulness | Correctness | F1-Score | Clarity | Precision | Média | Pior F1 | O que mudou |
-|---|---|---|---|---|---|---|---|---|
-| v1 baseline | 1.00 | 0.94 | 0.88 | 1.00 | 0.99 | 0.96 | 0.70 (3 casos < 0.8) | prompt original do Hub |
-| v2 iteração 1 | 0.98 | 0.92 | 0.86 | 0.99 | 0.98 | 0.95 | 0.65 (3 casos < 0.8) | Role + CoT + Skeleton + Few-shot, regras e edge cases |
-| v2 iteração 2 | 1.00 | 0.96 | 0.92 | 1.00 | 0.99 | 0.97 | 0.86 (0 casos < 0.8) | critérios complementares em bugs médios, persona "o sistema", metas ambiciosas, sem fixar valores de exemplo, fases + métricas de sucesso em bugs complexos |
-| **oficial** (Hub) v2 | 0.99 | 0.94 | 0.91 | 0.99 | 0.98 | 0.96 | 0.67 (1 caso < 0.8) | `python src/evaluate.py` contra `garelsilvapj/bug_to_user_story_v2`; v1 oficial: média 0.96, F1 0.87 |
-| v2 iteração 3 | 0.99 | 0.96 | 0.93 | 0.99 | 0.99 | 0.97 | 0.86 (0 casos < 0.8) | consequências operacionais (notificação, auditoria, limites), persona igual ao papel do relato, exemplos técnicos em blocos de código |
-
-**Leitura das iterações.** Clarity e Precision já saturaram na primeira versão; a métrica que
-guiou o trabalho foi o **F1 (recall)**: os juízes apontavam critérios que a referência traz e o
-prompt omitia (critérios complementares para outros perfis, prevenção, acessibilidade; metas mais
-ambiciosas que o estado atual; detalhes técnicos concretos em bugs complexos). Cada iteração
-atacou exatamente esses apontamentos, sem inflar bugs simples (Precision se manteve ≥ 0.98).
-
-**Observação honesta sobre a baseline.** Com os modelos Gemini disponíveis em setembro de 2026,
-o prompt v1 **também ultrapassa 0.8 na média** (o exemplo do enunciado, com v1 em ~0.5, foi
-calibrado em modelos mais antigos). A diferença aparece na **consistência**: a v1 falha em
-3 dos 15 casos no F1 (pior caso 0.70, um bug complexo em que ela ignora metade da
-referência), enquanto a v2 final não tem nenhum caso abaixo de 0.8 (pior caso 0.86) e ganha
-+5.5 p.p. de F1 e +2.4 p.p. de Correctness.
-
 ---
 
 ## Resultados Finais
 
-### Tabela comparativa v1 vs v2
+### Link público do dashboard do LangSmith
 
-Modelo de resposta `gemini-3.5-flash-lite`, juiz `gemini-3.6-flash`, dataset de 15 bugs
-(5 simples, 7 médios, 3 complexos), critério de aprovação ≥ 0.8 em **todas** as métricas.
+Links **públicos** (abrem sem login, gerados com `share_dataset`/`share_run` do LangSmith):
 
-| Métrica | v1 (baseline) | v2 (iteração 3) | Δ |
-|---|---|---|---|
-| Helpfulness | 1.00 ✓ | **0.99** ✓ | -0.6 p.p. |
-| Correctness | 0.94 ✓ | **0.96** ✓ | +2.4 p.p. |
-| F1-Score | 0.88 ✓ | **0.93** ✓ | +5.5 p.p. |
-| Clarity | 1.00 ✓ | **0.99** ✓ | -0.5 p.p. |
-| Precision | 0.99 ✓ | **0.99** ✓ | -0.7 p.p. |
-| **Média** | 0.96 | **0.97** | +1.3 p.p. |
-| Casos com F1 < 0.8 | 3/15 | **0/15** | |
-| Pior F1 individual | 0.70 | **0.86** | |
+| Evidência | Link público |
+|---|---|
+| Prompt otimizado **v2** no Hub (com tags, descrição e técnicas) | https://smith.langchain.com/hub/garelsilvapj/bug_to_user_story_v2 |
+| Prompt baseline **v1** no Hub (republicado após o pull) | https://smith.langchain.com/hub/garelsilvapj/bug_to_user_story_v1 |
+| **Dataset de avaliação** `mba-bug-to-user-story-eval` com **15 exemplos** | https://smith.langchain.com/public/58bf3322-78d6-496f-8a6a-2f4012f132d2/d |
+| **Trace detalhado 1**: bug simples, prompt v2 (system + relato + user story gerada) | https://smith.langchain.com/public/8ac557c6-565c-49ee-b67d-2b3bcf974670/r |
+| **Trace detalhado 2**: bug médio, prompt v2 | https://smith.langchain.com/public/c7c4fae4-3151-4dfe-ba66-cf59acf1bbad/r |
+| **Trace detalhado 3**: bug complexo, prompt v2 | https://smith.langchain.com/public/fd864ccd-2188-42ae-8001-2fd34ae478ca/r |
 
-_Números acima: ensaio local (mesmas funções de `src/metrics.py`). A rodada oficial via `python src/evaluate.py` contra o Hub está registrada logo abaixo._
+Links do workspace (mesmos objetos, exigem login na conta):
+projeto de tracing `mba-bug-to-user-story` (120 execuções raiz: 15 respostas + 45 julgamentos por rodada) em https://smith.langchain.com/o/598b6c94-8637-44e7-bcad-b8463ffdc4b0/projects/p/76cd543f-41cc-43a8-b4bc-e5b969485eac ·
+dataset em https://smith.langchain.com/o/598b6c94-8637-44e7-bcad-b8463ffdc4b0/datasets/1028f600-b365-47a6-affc-936b4bbe721c.
 
-### Rodada oficial (`python src/evaluate.py`, prompt puxado do Hub)
+### Screenshots das avaliações com as notas mínimas de 0.8 atingidas
+
+| | |
+|---|---|
+| ![Avaliação aprovada](docs/screenshots/01-evaluate-aprovado.png) | ![Dataset com 15 exemplos](docs/screenshots/02-dataset-15-exemplos.png) |
+| ![Prompt v2 no Hub](docs/screenshots/03-prompt-v2-hub.png) | ![Trace exemplo 1](docs/screenshots/04-tracing-exemplo-1.png) |
+| ![Trace exemplo 2](docs/screenshots/05-tracing-exemplo-2.png) | ![Trace exemplo 3](docs/screenshots/06-tracing-exemplo-3.png) |
+
+Lista e instruções de captura em [`docs/screenshots/README.md`](docs/screenshots/README.md).
+O print do terminal é de uma **segunda execução** de `python src/evaluate.py` (média 0.9616,
+Clarity 1.00), feita para a captura; a rodada registrada em `docs/iteracoes/oficial-v2.md` deu
+0.9622. A variação entre execuções vem do modelo juiz e não altera o resultado: todas as métricas
+≥ 0.8 nas duas rodadas.
+
+---
+
+### Tabela comparativa: prompts ruins (v1) vs prompts otimizados (v2)
+
+#### Rodada oficial (`python src/evaluate.py`, prompt puxado do Hub)
 
 Saída completa em [`docs/iteracoes/oficial-v2.md`](docs/iteracoes/oficial-v2.md) e
 [`docs/iteracoes/oficial-v1.md`](docs/iteracoes/oficial-v1.md).
@@ -324,34 +251,131 @@ Métricas Base:
 ✅ STATUS: APROVADO - Todas as métricas >= 0.8
 ```
 
-### Links públicos no LangSmith
+#### Ensaio local (mesmas métricas, prompt lido do YAML)
 
-| Evidência | Link |
+Modelo de resposta `gemini-3.5-flash-lite`, juiz `gemini-3.6-flash`, dataset de 15 bugs
+(5 simples, 7 médios, 3 complexos), critério de aprovação ≥ 0.8 em **todas** as métricas.
+
+| Métrica | v1 (baseline) | v2 (iteração 3) | Δ |
+|---|---|---|---|
+| Helpfulness | 1.00 ✓ | **0.99** ✓ | -0.6 p.p. |
+| Correctness | 0.94 ✓ | **0.96** ✓ | +2.4 p.p. |
+| F1-Score | 0.88 ✓ | **0.93** ✓ | +5.5 p.p. |
+| Clarity | 1.00 ✓ | **0.99** ✓ | -0.5 p.p. |
+| Precision | 0.99 ✓ | **0.99** ✓ | -0.7 p.p. |
+| **Média** | 0.96 | **0.97** | +1.3 p.p. |
+| Casos com F1 < 0.8 | 3/15 | **0/15** | |
+| Pior F1 individual | 0.70 | **0.86** | |
+
+_Números acima: ensaio local (mesmas funções de `src/metrics.py`). A rodada oficial via `python src/evaluate.py` contra o Hub está registrada logo abaixo._
+
+### Processo de iteração (3 rodadas locais + rodada oficial)
+
+Cada rodada usa o **mesmo dataset, as mesmas 5 métricas de `src/metrics.py` e o mesmo juiz** do
+`src/evaluate.py`. As três primeiras rodadas foram ensaios locais (prompt lido do YAML, antes do
+push), para não gastar o limite do free tier a cada ajuste; a rodada oficial roda `python
+src/evaluate.py` contra o prompt publicado no Hub. Registro completo por exemplo em
+[`docs/iteracoes/`](docs/iteracoes/).
+
+| Rodada | Helpfulness | Correctness | F1-Score | Clarity | Precision | Média | Pior F1 | O que mudou |
+|---|---|---|---|---|---|---|---|---|
+| v1 baseline | 1.00 | 0.94 | 0.88 | 1.00 | 0.99 | 0.96 | 0.70 (3 casos < 0.8) | prompt original do Hub |
+| v2 iteração 1 | 0.98 | 0.92 | 0.86 | 0.99 | 0.98 | 0.95 | 0.65 (3 casos < 0.8) | Role + CoT + Skeleton + Few-shot, regras e edge cases |
+| v2 iteração 2 | 1.00 | 0.96 | 0.92 | 1.00 | 0.99 | 0.97 | 0.86 (0 casos < 0.8) | critérios complementares em bugs médios, persona "o sistema", metas ambiciosas, sem fixar valores de exemplo, fases + métricas de sucesso em bugs complexos |
+| **oficial** (Hub) v2 | 0.99 | 0.94 | 0.91 | 0.99 | 0.98 | 0.96 | 0.67 (1 caso < 0.8) | `python src/evaluate.py` contra `garelsilvapj/bug_to_user_story_v2`; v1 oficial: média 0.96, F1 0.87 |
+| v2 iteração 3 | 0.99 | 0.96 | 0.93 | 0.99 | 0.99 | 0.97 | 0.86 (0 casos < 0.8) | consequências operacionais (notificação, auditoria, limites), persona igual ao papel do relato, exemplos técnicos em blocos de código |
+
+**Leitura das iterações.** Clarity e Precision já saturaram na primeira versão; a métrica que
+guiou o trabalho foi o **F1 (recall)**: os juízes apontavam critérios que a referência traz e o
+prompt omitia (critérios complementares para outros perfis, prevenção, acessibilidade; metas mais
+ambiciosas que o estado atual; detalhes técnicos concretos em bugs complexos). Cada iteração
+atacou exatamente esses apontamentos, sem inflar bugs simples (Precision se manteve ≥ 0.98).
+
+**Observação honesta sobre a baseline.** Com os modelos Gemini disponíveis em setembro de 2026,
+o prompt v1 **também ultrapassa 0.8 na média** (o exemplo do enunciado, com v1 em ~0.5, foi
+calibrado em modelos mais antigos). A diferença aparece na **consistência**: a v1 falha em
+3 dos 15 casos no F1 (pior caso 0.70, um bug complexo em que ela ignora metade da
+referência), enquanto a v2 final não tem nenhum caso abaixo de 0.8 (pior caso 0.86) e ganha
++5.5 p.p. de F1 e +2.4 p.p. de Correctness.
+
+---
+
+---
+
+## Como Executar
+
+### Pré-requisitos e dependências
+
+| Item | Detalhe |
 |---|---|
-| Prompt otimizado **v2** (público) | https://smith.langchain.com/hub/garelsilvapj/bug_to_user_story_v2 |
-| Prompt baseline **v1** (público, republicado a partir do pull) | https://smith.langchain.com/hub/garelsilvapj/bug_to_user_story_v1 |
-| Dataset de avaliação (`mba-bug-to-user-story-eval`, 15 exemplos) | https://smith.langchain.com/o/598b6c94-8637-44e7-bcad-b8463ffdc4b0/datasets/1028f600-b365-47a6-affc-936b4bbe721c |
-| Projeto de tracing (`mba-bug-to-user-story`, 120 execuções raiz: 15 respostas + 45 julgamentos por prompt) | https://smith.langchain.com/o/598b6c94-8637-44e7-bcad-b8463ffdc4b0/projects/p/76cd543f-41cc-43a8-b4bc-e5b969485eac |
-| Trace detalhado, exemplo 1 (bug simples) | https://smith.langchain.com/o/598b6c94-8637-44e7-bcad-b8463ffdc4b0/projects/p/76cd543f-41cc-43a8-b4bc-e5b969485eac/r/fbb68d8e-8a7b-4785-8e5b-639b31bb77b4 |
-| Trace detalhado, exemplo 2 (bug médio) | https://smith.langchain.com/o/598b6c94-8637-44e7-bcad-b8463ffdc4b0/projects/p/76cd543f-41cc-43a8-b4bc-e5b969485eac/r/a444ff7d-e340-4c0c-adcc-888cae767403 |
-| Trace detalhado, exemplo 3 (bug complexo) | https://smith.langchain.com/o/598b6c94-8637-44e7-bcad-b8463ffdc4b0/projects/p/76cd543f-41cc-43a8-b4bc-e5b969485eac/r/8ee71d4c-d38a-4b45-9963-c3490aae5ec3 |
+| Python | 3.9+ (testado com 3.11) |
+| Conta LangSmith | região **US** (`smith.langchain.com`), plano Developer gratuito. O prompt original do desafio está publicado nessa região; contas EU (`eu.smith.langchain.com`) não conseguem fazer o pull. |
+| Username do Hub | handle público do seu workspace no LangSmith (aparece antes da `/` nos seus prompts) |
+| LLM | Google Gemini (free tier, sem cartão) **ou** OpenAI (pago). Este projeto foi executado 100% com Gemini, custo zero. |
 
-Os prompts são públicos e abrem sem login. Dataset, projeto e traces ficam dentro do workspace
-(o LangSmith não expõe projetos de tracing publicamente); por isso os screenshots abaixo.
+### 1. Instalar
 
-### Screenshots
+```bash
+git clone git@github.com:garelsilvapj/mba-ia-pull-evaluation-prompt.git
+cd mba-ia-pull-evaluation-prompt
+python3 -m venv venv
+source venv/bin/activate        # Windows: venv\Scripts\activate
+pip install -r requirements.txt
+```
 
-| | |
-|---|---|
-| ![Avaliação aprovada](docs/screenshots/01-evaluate-aprovado.png) | ![Dataset com 15 exemplos](docs/screenshots/02-dataset-15-exemplos.png) |
-| ![Prompt v2 no Hub](docs/screenshots/03-prompt-v2-hub.png) | ![Trace exemplo 1](docs/screenshots/04-tracing-exemplo-1.png) |
-| ![Trace exemplo 2](docs/screenshots/05-tracing-exemplo-2.png) | ![Trace exemplo 3](docs/screenshots/06-tracing-exemplo-3.png) |
+### 2. Configurar o `.env`
 
-Lista e instruções de captura em [`docs/screenshots/README.md`](docs/screenshots/README.md).
-O print do terminal é de uma **segunda execução** de `python src/evaluate.py` (média 0.9616,
-Clarity 1.00), feita para a captura; a rodada registrada em `docs/iteracoes/oficial-v2.md` deu
-0.9622. A variação entre execuções vem do modelo juiz e não altera o resultado: todas as métricas
-≥ 0.8 nas duas rodadas.
+```bash
+cp .env.example .env
+```
+
+Preencha:
+
+```ini
+LANGSMITH_TRACING=true
+LANGSMITH_ENDPOINT=https://api.smith.langchain.com
+LANGSMITH_API_KEY=lsv2_...            # smith.langchain.com → Settings → API Keys
+LANGSMITH_PROJECT=mba-bug-to-user-story
+USERNAME_LANGSMITH_HUB=seu-username   # handle do Hub
+
+GOOGLE_API_KEY=AIza...                # https://aistudio.google.com/app/apikey
+LLM_PROVIDER=google
+LLM_MODEL=gemini-3.5-flash-lite       # modelo que responde (gera a user story)
+EVAL_MODEL=gemini-3.6-flash           # modelo juiz (calcula as métricas)
+```
+
+**Escolha dos modelos.** O enunciado pede que se consulte a documentação vigente do provedor. Em
+2026-09-11 os modelos `gemini-2.5-*` do `.env.example` original **não estão mais disponíveis para
+contas novas** (a API responde `404 ... no longer available to new users`). Os modelos acima foram
+verificados via `ListModels` e chamadas reais com a chave do free tier. Usei um modelo mais capaz
+para julgar (`gemini-3.6-flash`) do que para responder (`gemini-3.5-flash-lite`), como o enunciado
+sugere. Como o free tier limita a ~10 requisições/minuto por modelo, uma avaliação completa
+(15 respostas + 45 julgamentos) leva alguns minutos; o cliente do LangChain refaz automaticamente
+as chamadas que recebem HTTP 429. O free tier do Gemini exige um projeto **sem billing habilitado**
+no AI Studio.
+
+### 3. Comandos para cada fase
+
+```bash
+# Fase 1 — pull do prompt de baixa qualidade (grava prompts/bug_to_user_story_v1.yml)
+python src/pull_prompts.py
+
+# Fase 2 — refatoração: editar prompts/bug_to_user_story_v2.yml (já preenchido neste repositório)
+
+# Fase 3 — push público dos prompts para o Hub ({username}/bug_to_user_story_v2 e _v1)
+python src/push_prompts.py
+
+# Fase 4 — avaliação da v2 com as 5 métricas (script fornecido pelo desafio, não alterado)
+python src/evaluate.py
+
+# Extra — avaliação da v1 (baseline) com as mesmas métricas, para a tabela comparativa
+python src/evaluate_baseline.py
+
+# Fase 5 — testes de validação do prompt
+pytest tests/test_prompts.py -v
+```
+
+---
 
 ---
 
@@ -373,6 +397,8 @@ pytest tests/test_prompts.py -v
 | `test_few_shot_examples_not_in_eval_dataset` | extra: exemplos few-shot não vêm do dataset |
 
 Resultado: 8 testes passando (`8 passed`).
+
+---
 
 ---
 
